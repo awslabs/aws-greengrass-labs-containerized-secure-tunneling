@@ -1,0 +1,23 @@
+{
+    "component" :{
+      "aws.greengrass.labs.CustomSecureTunneling": {
+        "author": "AWS IoT Greengrass",
+        "version": "NEXT_PATCH",
+        "build": {
+          "build_system": "custom",
+          "custom_build_command": [
+            "bash",
+            "build-custom.sh",
+            "greengrass_custom_secure_tunneling",
+            "aws.greengrass.labs.CustomSecureTunneling",
+            "NEXT_PATCH"
+          ]
+        },
+        "publish": {
+          "bucket": "<PLACEHOLDER BUCKET HERE>",
+          "region": "<PLACEHOLDER REGION HERE>"
+        }
+      }
+    },
+    "gdk_version": "1.0.0"
+  }

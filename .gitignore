@@ -1,0 +1,6 @@
+*.tar.gz
+*.zip
+.coverage
+.pytest_cache
+dummy_config.json
+greengrass-build/

@@ -1,0 +1,44 @@
+---
+RecipeFormatVersion: '2020-01-25'
+ComponentName: aws.greengrass.labs.CustomSecureTunneling
+ComponentVersion: '1.0.0'
+ComponentDescription: A component for Secure Tunneling in a customized container.
+ComponentPublisher: Amazon
+ComponentDependencies:
+  aws.greengrass.DockerApplicationManager:
+    VersionRequirement: ~2.0.0
+  aws.greengrass.TokenExchangeService:
+    VersionRequirement: ~2.0.0
+ComponentConfiguration:
+  DefaultConfiguration:
+    accessControl:
+      aws.greengrass.ipc.mqttproxy:
+        com.example.CustomSecureTunneling:mqttproxy:1:
+          policyDescription: Allows access to subscribe to new Secure Tunneling notifications.
+          operations:
+            - "aws.greengrass#SubscribeToIoTCore"
+          resources:
+            - "$aws/things/+/tunnels/notify"
+Manifests:
+  - Platform:
+      os: linux
+    Lifecycle:
+      Install:
+        RequiresPrivilege: true
+        Script: |-
+          docker load -i {artifacts:path}/image.tar.gz
+      Run:
+        RequiresPrivilege: true
+        Script: |-
+          docker run \
+                --name=greengrass_custom_secure_tunneling \
+                --network=host \
+                --rm \
+                -e AWS_REGION \
+                -e AWS_IOT_THING_NAME \
+                -e AWS_GG_NUCLEUS_DOMAIN_SOCKET_FILEPATH_FOR_COMPONENT \
+                -e SVCUID \
+                -v {kernel:rootPath}/ipc.socket:{kernel:rootPath}/ipc.socket \
+                greengrass_custom_secure_tunneling:NEXT_PATCH
+    Artifacts:
+      - URI: s3://REPLACE_BUCKET_NAME/COMPONENT_NAME/COMPONENT_VERSION/image.tar.gz
