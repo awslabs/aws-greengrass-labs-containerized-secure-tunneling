@@ -120,7 +120,7 @@ greengrassdevice@ip-172-31-10-200:~$
 ## Logging
 
 You can view the logs of the Greengrass component under
-`/greengrass/v2/logs/com.example.CustomSecureTunneling.log` on your Greengrass
+`/greengrass/v2/logs/aws.greengrass.labs.CustomSecureTunneling.log` on your Greengrass
 device. A successfully deployed and started component looks like this:
 
 ```

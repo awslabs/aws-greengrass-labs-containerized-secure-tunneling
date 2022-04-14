@@ -13,7 +13,7 @@ ComponentConfiguration:
   DefaultConfiguration:
     accessControl:
       aws.greengrass.ipc.mqttproxy:
-        com.example.CustomSecureTunneling:mqttproxy:1:
+        aws.greengrass.labs.CustomSecureTunneling:mqttproxy:1:
           policyDescription: Allows access to subscribe to new Secure Tunneling notifications.
           operations:
             - "aws.greengrass#SubscribeToIoTCore"
