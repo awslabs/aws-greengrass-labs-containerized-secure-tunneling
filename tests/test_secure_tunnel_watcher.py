@@ -35,6 +35,10 @@ def test_subscribe_topic_handler(mocker):
         )
     )
 
+    mocker.patch("os.path.exists")
+    mocker.patch("shutil.rmtree")
+    mocker.patch("os.makedirs")
+
     stream_handler.on_stream_event(event)
 
     calls = popen.call_args_list
@@ -108,6 +112,10 @@ def test_popen_error_device_client(mocker):
             }""",
         )
     )
+
+    mocker.patch("os.path.exists")
+    mocker.patch("shutil.rmtree")
+    mocker.patch("os.makedirs")
 
     try:
         stream_handler.on_stream_event(event)

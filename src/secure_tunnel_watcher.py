@@ -1,8 +1,10 @@
 import os
+import shutil
 import sys
 import time
 import json
 import traceback
+import threading
 import subprocess
 
 import awsiot.greengrasscoreipc
@@ -13,10 +15,13 @@ from awsiot.greengrasscoreipc.model import (
     SubscribeToIoTCoreRequest,
 )
 
+LOCK_FILE_PATH = "/app/lock/"
+
 
 class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
     def __init__(self):
         super().__init__()
+        self.proc = None
 
     def on_stream_event(self, event: IoTCoreMessage) -> None:
         try:
@@ -36,6 +41,7 @@ class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
         try:
             new_environ = os.environ.copy()
             new_environ["AWSIOT_TUNNEL_ACCESS_TOKEN"] = msg["clientAccessToken"]
+            new_environ["LOCK_FILE_PATH"] = LOCK_FILE_PATH
 
             config = "dummy_config.json"
             with open(config, "w") as f:
@@ -58,10 +64,21 @@ class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
                 "--config-file", config,
                 "--log-level", "DEBUG",
             ]
+
+            if self.proc and not self.proc.poll():
+                print("Terminating existing aws-iot-device-client...")
+                self.proc.terminate()
+                time.sleep(5)
+
+            if os.path.exists(LOCK_FILE_PATH):
+                shutil.rmtree(LOCK_FILE_PATH)
+            os.makedirs(LOCK_FILE_PATH, exist_ok=True)
+
             print(f"Starting aws-iot-device-client...")
             print("    ", " ".join(cmd))
 
-            subprocess.Popen(cmd, env=new_environ, start_new_session=True, stderr=subprocess.STDOUT)
+            self.proc = subprocess.Popen(cmd, env=new_environ, start_new_session=True, stderr=subprocess.STDOUT)
+            threading.Thread(target=self.proc.wait).start() # reap the process once it exits
         except:
             print("ERROR: failed to configure and start aws-iot-device-client", file=sys.stderr)
             traceback.print_exc()
