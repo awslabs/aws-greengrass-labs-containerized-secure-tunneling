@@ -7,12 +7,11 @@ import traceback
 import threading
 import subprocess
 
-import awsiot.greengrasscoreipc
+from awsiot.greengrasscoreipc.clientv2 import GreengrassCoreIPCClientV2
 import awsiot.greengrasscoreipc.client as client
 from awsiot.greengrasscoreipc.model import (
     QOS,
     IoTCoreMessage,
-    SubscribeToIoTCoreRequest,
 )
 
 LOCK_FILE_PATH = "/app/lock/"
@@ -99,16 +98,13 @@ def init_watcher():
         print("ERROR: missing AWS_IOT_THING_NAME. Are you running as a GGv2 component?", file=sys.stderr)
         sys.exit(1)
 
-    handler = StreamHandler()
-    ipc_client = awsiot.greengrasscoreipc.connect()
-    operation = ipc_client.new_subscribe_to_iot_core(handler)
-
     topic_name = f"$aws/things/{os.environ['AWS_IOT_THING_NAME']}/tunnels/notify"
-    request = SubscribeToIoTCoreRequest(topic_name=topic_name, qos=QOS.AT_LEAST_ONCE)
-    future = operation.activate(request)
-    future.result(15)
-
-    print(f"Subscribed to {request.topic_name}. Waiting for notifications...")
+    client = GreengrassCoreIPCClientV2()
+    client.subscribe_to_iot_core(
+        topic_name=topic_name, qos=QOS.AT_LEAST_ONCE,
+        stream_handler=StreamHandler(),
+    )
+    print(f"Subscribed to {topic_name}. Waiting for notifications...")
 
 
 if __name__ == "__main__": # pragma: nocover
