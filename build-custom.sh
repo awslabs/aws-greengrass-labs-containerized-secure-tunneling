@@ -9,7 +9,10 @@ IMAGE_NAME=$1
 COMPONENT_NAME=$2
 VERSION=$3
 
-cp recipe.yaml ./greengrass-build/recipes
+mkdir -p ./greengrass-build/artifacts/$COMPONENT_NAME/$VERSION
+
+mkdir -p ./greengrass-build/recipes/
+cp recipe.yaml ./greengrass-build/recipes/
 
 docker build -t $IMAGE_NAME:$VERSION src/
 docker save --output ./greengrass-build/artifacts/$COMPONENT_NAME/$VERSION/image.tar.gz $IMAGE_NAME:$VERSION
