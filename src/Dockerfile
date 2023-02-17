@@ -5,11 +5,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get -y install build-essential g++ libssl-dev cmake git
 
-# get v1.5.14 via b6080e5bbf89fca176372aa7c839cd8e92edf7dc
-# see https://github.com/awslabs/aws-iot-device-client/blob/b6080e5bbf89fca176372aa7c839cd8e92edf7dc/.github/build.sh#L106
 RUN git clone https://github.com/awslabs/aws-iot-device-client.git && \
     cd aws-iot-device-client && \
-    git checkout b6080e5bbf89fca176372aa7c839cd8e92edf7dc && \
+    git checkout v1.8 && \
     mkdir build && \
     cd build && \
     cmake ../ \
