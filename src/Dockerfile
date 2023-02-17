@@ -1,4 +1,4 @@
-FROM ubuntu:20.04 AS builder
+FROM ubuntu:22.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -25,7 +25,9 @@ RUN git clone https://github.com/awslabs/aws-iot-device-client.git && \
         && \
     cmake --build . --target aws-iot-device-client
 
-FROM ubuntu:20.04
+################################################################################
+
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=true
