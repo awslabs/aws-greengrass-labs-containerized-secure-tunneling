@@ -35,6 +35,12 @@ processor architecture by using the included `Dockerfile` and the GDK build
 script. The container image is uploaded to your S3 bucket, and the Greengrass
 device needs read access to retrieve it during deployment of the component.
 
+This component also supports rotating the client access token, see [this API
+documentation
+page](https://docs.aws.amazon.com/iot/latest/apireference/API_iot-secure-tunneling_RotateTunnelAccessToken.html).
+If an instance of the aws-iot-device-client is already running, the will be
+terminated and a new session established using the latest token.
+
 A helper script to open a fresh tunnel and start the
 [localproxy](https://github.com/aws-samples/aws-iot-securetunneling-localproxy)
 on your local system is included, also running in a portable container.
