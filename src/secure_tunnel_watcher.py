@@ -29,7 +29,7 @@ class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
             msg = json.loads(message_string)
         except:
             print("ERROR: invalid tunnel event payload:", event.message.payload, file=sys.stderr)
-            traceback.print_exc()
+            traceback.print_exc(file=sys.stderr)
             return
 
         for required_fields in ("region", "services", "clientAccessToken"):
@@ -80,7 +80,7 @@ class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
             threading.Thread(target=self.proc.wait).start() # reap the process once it exits
         except:
             print("ERROR: failed to configure and start aws-iot-device-client", file=sys.stderr)
-            traceback.print_exc()
+            traceback.print_exc(file=sys.stderr)
             return
 
     def on_stream_error(self, error: Exception) -> bool: # pragma: nocover
