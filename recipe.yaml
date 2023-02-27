@@ -1,7 +1,7 @@
 ---
 RecipeFormatVersion: '2020-01-25'
 ComponentName: aws.greengrass.labs.CustomSecureTunneling
-ComponentVersion: '1.0.0'
+ComponentVersion: '1.0.1'
 ComponentDescription: A component for Secure Tunneling in a customized container.
 ComponentPublisher: Amazon
 ComponentDependencies:
