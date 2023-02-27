@@ -35,6 +35,10 @@ def test_subscribe_topic_handler(mocker):
         )
     )
 
+    mocker.patch("os.path.exists")
+    mocker.patch("shutil.rmtree")
+    mocker.patch("os.makedirs")
+
     stream_handler.on_stream_event(event)
 
     calls = popen.call_args_list
@@ -109,9 +113,47 @@ def test_popen_error_device_client(mocker):
         )
     )
 
+    mocker.patch("os.path.exists")
+    mocker.patch("shutil.rmtree")
+    mocker.patch("os.makedirs")
+
     try:
         stream_handler.on_stream_event(event)
     except:
         pytest.fail("should not have raised exception")
 
     popen.assert_called_once()
+
+def test_rotate_token(mocker):
+    mocker.patch("time.sleep")
+    popen = mocker.patch("subprocess.Popen", create=True)
+    stream_handler = StreamHandler()
+
+    event = model.IoTCoreMessage(
+        message=model.MQTTMessage(
+            topic_name="TestTopicName",
+            payload=b"""{
+                "region": "unknown-region",
+                "services": "some-service",
+                "clientAccessToken": "abcd1234"
+            }""",
+        )
+    )
+
+    mocker.patch("os.path.exists")
+    mocker.patch("shutil.rmtree")
+    mocker.patch("os.makedirs")
+
+    stream_handler.on_stream_event(event)
+
+    popen.assert_called_once()
+    assert stream_handler.proc is not None
+
+    stream_handler.proc.poll = mocker.MagicMock(return_value=False)
+    stream_handler.proc.terminate = mocker.MagicMock()
+
+    stream_handler.on_stream_event(event)
+
+    assert popen.call_count == 2
+    stream_handler.proc.poll.assert_called_once()
+    stream_handler.proc.terminate.assert_called_once()

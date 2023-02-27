@@ -1,15 +1,13 @@
-FROM ubuntu:20.04 AS builder
+FROM ubuntu:22.04 AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get -y install build-essential g++ libssl-dev cmake git
 
-# get v1.5.14 via b6080e5bbf89fca176372aa7c839cd8e92edf7dc
-# see https://github.com/awslabs/aws-iot-device-client/blob/b6080e5bbf89fca176372aa7c839cd8e92edf7dc/.github/build.sh#L106
 RUN git clone https://github.com/awslabs/aws-iot-device-client.git && \
     cd aws-iot-device-client && \
-    git checkout b6080e5bbf89fca176372aa7c839cd8e92edf7dc && \
+    git checkout v1.8 && \
     mkdir build && \
     cd build && \
     cmake ../ \
@@ -27,13 +25,15 @@ RUN git clone https://github.com/awslabs/aws-iot-device-client.git && \
         && \
     cmake --build . --target aws-iot-device-client
 
-FROM ubuntu:20.04
+################################################################################
+
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=true
 
 RUN apt-get update && apt-get install -y python3 python3-pip openssl
-RUN python3 -m pip install awsiotsdk==1.9.2
+RUN python3 -m pip install awsiotsdk==1.12.5
 
 RUN mkdir /app
 WORKDIR /app/

@@ -1,22 +1,26 @@
 import os
+import shutil
 import sys
 import time
 import json
 import traceback
+import threading
 import subprocess
 
-import awsiot.greengrasscoreipc
+from awsiot.greengrasscoreipc.clientv2 import GreengrassCoreIPCClientV2
 import awsiot.greengrasscoreipc.client as client
 from awsiot.greengrasscoreipc.model import (
     QOS,
     IoTCoreMessage,
-    SubscribeToIoTCoreRequest,
 )
+
+LOCK_FILE_PATH = "/app/lock/"
 
 
 class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
     def __init__(self):
         super().__init__()
+        self.proc = None
 
     def on_stream_event(self, event: IoTCoreMessage) -> None:
         try:
@@ -25,7 +29,7 @@ class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
             msg = json.loads(message_string)
         except:
             print("ERROR: invalid tunnel event payload:", event.message.payload, file=sys.stderr)
-            traceback.print_exc()
+            traceback.print_exc(file=sys.stderr)
             return
 
         for required_fields in ("region", "services", "clientAccessToken"):
@@ -36,6 +40,7 @@ class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
         try:
             new_environ = os.environ.copy()
             new_environ["AWSIOT_TUNNEL_ACCESS_TOKEN"] = msg["clientAccessToken"]
+            new_environ["LOCK_FILE_PATH"] = LOCK_FILE_PATH
 
             config = "dummy_config.json"
             with open(config, "w") as f:
@@ -58,13 +63,24 @@ class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
                 "--config-file", config,
                 "--log-level", "DEBUG",
             ]
+
+            if self.proc and not self.proc.poll():
+                print("Terminating existing aws-iot-device-client...")
+                self.proc.terminate()
+                time.sleep(5)
+
+            if os.path.exists(LOCK_FILE_PATH):
+                shutil.rmtree(LOCK_FILE_PATH)
+            os.makedirs(LOCK_FILE_PATH, exist_ok=True)
+
             print(f"Starting aws-iot-device-client...")
             print("    ", " ".join(cmd))
 
-            subprocess.Popen(cmd, env=new_environ, start_new_session=True, stderr=subprocess.STDOUT)
+            self.proc = subprocess.Popen(cmd, env=new_environ, start_new_session=True, stderr=subprocess.STDOUT)
+            threading.Thread(target=self.proc.wait).start() # reap the process once it exits
         except:
             print("ERROR: failed to configure and start aws-iot-device-client", file=sys.stderr)
-            traceback.print_exc()
+            traceback.print_exc(file=sys.stderr)
             return
 
     def on_stream_error(self, error: Exception) -> bool: # pragma: nocover
@@ -82,16 +98,13 @@ def init_watcher():
         print("ERROR: missing AWS_IOT_THING_NAME. Are you running as a GGv2 component?", file=sys.stderr)
         sys.exit(1)
 
-    handler = StreamHandler()
-    ipc_client = awsiot.greengrasscoreipc.connect()
-    operation = ipc_client.new_subscribe_to_iot_core(handler)
-
     topic_name = f"$aws/things/{os.environ['AWS_IOT_THING_NAME']}/tunnels/notify"
-    request = SubscribeToIoTCoreRequest(topic_name=topic_name, qos=QOS.AT_LEAST_ONCE)
-    future = operation.activate(request)
-    future.result(15)
-
-    print(f"Subscribed to {request.topic_name}. Waiting for notifications...")
+    client = GreengrassCoreIPCClientV2()
+    client.subscribe_to_iot_core(
+        topic_name=topic_name, qos=QOS.AT_LEAST_ONCE,
+        stream_handler=StreamHandler(),
+    )
+    print(f"Subscribed to {topic_name}. Waiting for notifications...")
 
 
 if __name__ == "__main__": # pragma: nocover
