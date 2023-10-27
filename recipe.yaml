@@ -40,5 +40,12 @@ Manifests:
                 -e SVCUID \
                 -v {kernel:rootPath}/ipc.socket:{kernel:rootPath}/ipc.socket \
                 greengrass_custom_secure_tunneling:NEXT_PATCH
+      Shutdown:
+        RequiresPrivilege: false
+        script: |-
+          echo "Stopping the greengrass_custom_secure_tunneling container..."
+          docker stop greengrass_custom_secure_tunneling
+          echo "Removing the greengrass_custom_secure_tunneling container..."
+          docker rm greengrass_custom_secure_tunneling
     Artifacts:
       - URI: s3://REPLACE_BUCKET_NAME/COMPONENT_NAME/COMPONENT_VERSION/image.tar.gz
