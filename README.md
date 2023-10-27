@@ -86,6 +86,8 @@ Commands to build and publish using GDK:
 * gdk component build
 * gdk component publish
 
+Note: The container is intended to be used on a linux amd64 architecture. If you wish to deploy this component onto another architecture please modify the --platform type in the Dockerfile
+
 ## Usage
 
 First, build and publish the component into your AWS account.
