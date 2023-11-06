@@ -41,7 +41,7 @@ Manifests:
                 -v {kernel:rootPath}/ipc.socket:{kernel:rootPath}/ipc.socket \
                 greengrass_custom_secure_tunneling:NEXT_PATCH
       Shutdown:
-        RequiresPrivilege: false
+        RequiresPrivilege: true
         script: |-
           echo "Stopping the greengrass_custom_secure_tunneling container..."
           docker stop greengrass_custom_secure_tunneling
