@@ -86,6 +86,11 @@ Commands to build and publish using GDK:
 * gdk component build
 * gdk component publish
 
+Note: The container is intended to be used on a linux amd64 architecture. If you wish to deploy this component onto another architecture please modify the --platform type in the [Dockerfile](./src/Dockerfile). You can find a list of supported platform [here](https://github.com/awslabs/aws-iot-device-client#list-of-supported-platforms).
+ 
+Python version 3.10 is also required for Ubuntu 22.04: https://docs.python.org/3.10/library/asyncio-platforms.html.
+
+
 ## Usage
 
 First, build and publish the component into your AWS account.
