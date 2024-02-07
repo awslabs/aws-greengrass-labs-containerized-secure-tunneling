@@ -5,9 +5,10 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get -y install build-essential g++ libssl-dev cmake git
 
-RUN git clone https://github.com/awslabs/aws-iot-device-client.git && \
-    cd aws-iot-device-client && \
-    git checkout v1.8 && \
+RUN mkdir /aws-iot-device-client
+
+COPY aws-iot-device-client /aws-iot-device-client
+RUN cd aws-iot-device-client && \
     mkdir build && \
     cd build && \
     cmake ../ \
@@ -32,7 +33,7 @@ FROM --platform=linux/amd64 ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=true
 
-RUN apt-get update && apt-get install -y python3 python3-pip openssl
+RUN apt-get update && apt-get install -y python3 python3-pip openssl curl
 RUN python3 -m pip install awsiotsdk==1.12.5
 
 RUN mkdir /app
