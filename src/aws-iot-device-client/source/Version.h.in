@@ -1,0 +1,14 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+/**
+ * CMake will inject version information into this file at compile time, and will
+ * make it accessible to our source code as "Version.h"
+ */
+#ifndef AWS_IOT_DEVICE_CLIENT_VERSION_H
+#define AWS_IOT_DEVICE_CLIENT_VERSION_H
+
+#define DEVICE_CLIENT_VERSION_FULL "@aws-iot-device-client_VERSION_STRING_FULL@"
+#define DEVICE_CLIENT_VERSION "@aws-iot-device-client_VERSION_STRING@"
+
+#endif // AWS_IOT_DEVICE_CLIENT_VERSION_H

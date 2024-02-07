@@ -1,0 +1,11 @@
+[Unit]
+Description=AWS IoT Device Client
+Wants=network-online.target
+After=network.target network-online.target
+
+[Service]
+Environment="CONF_PATH=/etc/.aws-iot-device-client/aws-iot-device-client.conf"
+ExecStart=/sbin/aws-iot-device-client --config-file $CONF_PATH
+
+[Install]
+WantedBy=multi-user.target
