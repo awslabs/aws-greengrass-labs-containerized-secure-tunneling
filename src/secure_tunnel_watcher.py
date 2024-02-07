@@ -53,6 +53,30 @@ class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
                     "thing-name": "not_needed_see_argv"
                 }""")
 
+            http_proxy_config = "http-proxy-config.conf"
+
+            print('HTTP_PROXY={}'.format(os.getenv('HTTP_PROXY', None)))
+            if os.getenv('HTTP_PROXY', None) != None: 
+                # Remove "http://" part from the beginning of the string
+                http_proxy_env = os.getenv('HTTP_PROXY', None)
+                http_proxy_env = http_proxy_env.replace("http://", "")
+                http_proxy_host, http_proxy_port = http_proxy_env.split(':')
+                print('Host={}, port={}'.format(http_proxy_host, http_proxy_port))
+    
+                http_proxy_config = "http-proxy-config.conf"
+                content={
+                    "http-proxy-enabled": True,
+                    "http-proxy-host": http_proxy_host,
+                    "http-proxy-port": http_proxy_port,
+                    "http-proxy-auth-method": "None"
+                }
+                with open(http_proxy_config, "w") as f:
+                    f.write(json.dumps(content))
+            else:
+                with open(http_proxy_config, "w") as f:
+                    f.write("""{
+                    "http-proxy-enabled": false,
+                }""")
             cmd = [
                 "/app/aws-iot-device-client",
                 "--enable-tunneling", "true",
@@ -61,6 +85,7 @@ class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
                 "--endpoint", f"data.tunneling.iot.{msg['region']}.amazonaws.com",
                 "--tunneling-disable-notification",
                 "--config-file", config,
+                "--http-proxy-config", "http-proxy-config.conf",
                 "--log-level", "DEBUG",
             ]
 
