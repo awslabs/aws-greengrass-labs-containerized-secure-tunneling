@@ -2,7 +2,7 @@ import json
 import pytest
 import awsiot.greengrasscoreipc.model as model
 
-from src.secure_tunnel_watcher import init_watcher, StreamHandler
+from src.secure_tunnel_watcher import init_watcher, StreamHandler, parse_http_proxy
 
 
 def test_subscribe_to_core(mocker, monkeypatch):
@@ -54,6 +54,7 @@ def test_subscribe_topic_handler(mocker):
         "--endpoint", "data.tunneling.iot.TEST-Region.amazonaws.com",
         "--tunneling-disable-notification",
         "--config-file", "dummy_config.json",
+        "--http-proxy-config", "http-proxy-config.conf",
         "--log-level", "DEBUG"
     ],)
     assert "AWSIOT_TUNNEL_ACCESS_TOKEN" in env
@@ -157,3 +158,54 @@ def test_rotate_token(mocker):
     assert popen.call_count == 2
     stream_handler.proc.poll.assert_called_once()
     stream_handler.proc.terminate.assert_called_once()
+
+
+def assert_proxy(result, expected):
+    assert result == expected
+
+def test_parse_http_proxy():
+    proxy_content = parse_http_proxy('http://username:password@10.11.12.13:8080')
+    proxy_expected = {
+                    "http-proxy-enabled": True,
+                    "http-proxy-host": "10.11.12.13",
+                    "http-proxy-port": "8080",
+                    "http-proxy-auth-method": "UserNameAndPassword",
+                    "http-proxy-username": "username",
+                    "http-proxy-password": "password"
+    }
+    assert proxy_content == proxy_expected
+
+    proxy_content = parse_http_proxy('http://username:@10.11.12.13:8080')
+    proxy_expected = {
+                    "http-proxy-enabled": True,
+                    "http-proxy-host": "10.11.12.13",
+                    "http-proxy-port": "8080",
+                    "http-proxy-auth-method": "UserNameAndPassword",
+                    "http-proxy-username": "username",
+                    "http-proxy-password": ""
+    }
+    assert proxy_content == proxy_expected
+
+    proxy_content = parse_http_proxy('http://@10.11.12.13:8080')
+    proxy_expected = {
+                    "http-proxy-enabled": True,
+                    "http-proxy-host": "10.11.12.13",
+                    "http-proxy-port": "8080",
+                    "http-proxy-auth-method": "None"
+    }
+    assert proxy_content == proxy_expected
+
+    proxy_content = parse_http_proxy('http://10.11.12.13:8080')
+    proxy_expected = {
+                    "http-proxy-enabled": True,
+                    "http-proxy-host": "10.11.12.13",
+                    "http-proxy-port": "8080",
+                    "http-proxy-auth-method": "None"
+    }
+    assert proxy_content == proxy_expected
+
+    proxy_content = parse_http_proxy('http://test:afefez10.11.12.13:8080')
+    proxy_expected = {
+                    "http-proxy-enabled": False
+    }
+    assert proxy_content == proxy_expected

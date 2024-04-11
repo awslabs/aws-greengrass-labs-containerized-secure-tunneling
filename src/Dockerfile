@@ -7,7 +7,7 @@ RUN apt-get update && \
 
 RUN git clone https://github.com/awslabs/aws-iot-device-client.git && \
     cd aws-iot-device-client && \
-    git checkout v1.8 && \
+    git checkout v1.9.2 && \
     mkdir build && \
     cd build && \
     cmake ../ \

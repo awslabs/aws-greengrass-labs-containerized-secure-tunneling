@@ -6,6 +6,7 @@ import json
 import traceback
 import threading
 import subprocess
+from urllib.parse import urlparse
 
 from awsiot.greengrasscoreipc.clientv2 import GreengrassCoreIPCClientV2
 import awsiot.greengrasscoreipc.client as client
@@ -15,6 +16,40 @@ from awsiot.greengrasscoreipc.model import (
 )
 
 LOCK_FILE_PATH = "/app/lock/"
+
+def parse_http_proxy(http_proxy):
+
+    http_proxy_content = {}
+
+    if http_proxy != None: 
+        try:
+            # extract all http proxy information
+            proxy = urlparse(http_proxy)
+            if proxy.hostname != None and proxy.port != None:
+                http_proxy_content = {
+                    "http-proxy-host": proxy.hostname,
+                    "http-proxy-port": str(proxy.port),
+                }
+                if proxy.username != None and proxy.password != None:
+                    http_proxy_content['http-proxy-auth-method'] = "UserNameAndPassword"
+                    http_proxy_content['http-proxy-username'] = proxy.username
+                    http_proxy_content['http-proxy-password'] = proxy.password
+                else:
+                    http_proxy_content['http-proxy-auth-method'] = "None"
+                
+                http_proxy_content["http-proxy-enabled"] = True
+            else:
+                http_proxy_content["http-proxy-enabled"] = False
+            
+        except Exception as e:
+            print('Not able to parse proxy config: {}'.format(http_proxy))
+            print('error: {}'.format(e))
+            http_proxy_content["http-proxy-enabled"] = False
+            
+    else:
+        http_proxy_content["http-proxy-enabled"] = False
+
+    return http_proxy_content
 
 
 class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
@@ -53,6 +88,12 @@ class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
                     "thing-name": "not_needed_see_argv"
                 }""")
 
+            http_proxy_config = "http-proxy-config.conf"
+            http_proxy_content = parse_http_proxy(os.getenv('HTTP_PROXY', None))
+            # save proxy configuration
+            with open(http_proxy_config, "w") as f:
+                json.dump(http_proxy_content, f)
+
             cmd = [
                 "/app/aws-iot-device-client",
                 "--enable-tunneling", "true",
@@ -61,6 +102,7 @@ class StreamHandler(client.SubscribeToIoTCoreStreamHandler):
                 "--endpoint", f"data.tunneling.iot.{msg['region']}.amazonaws.com",
                 "--tunneling-disable-notification",
                 "--config-file", config,
+                "--http-proxy-config", http_proxy_config,
                 "--log-level", "DEBUG",
             ]
 
