@@ -1,6 +1,0 @@
-{
-    "operation": "install-packages.sh",
-    "args": ["lftp", "dos2unix"],
-    "path": "default",
-    "allowStdErr": 2
-}
