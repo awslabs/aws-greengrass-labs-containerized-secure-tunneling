@@ -180,6 +180,18 @@ Once we are done with SSH session and close the tunnel, the `aws-iot-device-clie
 <...>
 ```
 
+## Connection through a network proxy
+
+You can configure a network proxy server to act as an intermediary for connecting to the Greengrass core device. AWS IoT Greengrass supports basic authentication for HTTP and HTTPS proxies.
+
+Greengrass core devices must run Greengrass nucleus v2.5.0 or later to use HTTPS proxies.
+
+The AWS IoT Greengrass Core software passes the proxy configuration to components through the ALL_PROXY, HTTP_PROXY, HTTPS_PROXY, and NO_PROXY environment variables. Components must use these settings to connect through the proxy. Components use common libraries (such as boto3, cURL, and the python requests package) that typically use these environment variables by default to make connections. If a component also specifies these environment variables, AWS IoT Greengrass doesn't override them.
+
+For more information, see [Configure a network proxy](https://docs.aws.amazon.com/greengrass/v2/developerguide/configure-greengrass-core-v2.html#configure-network-proxy).
+
+
+
 ## Testing using pytest
 
 Make sure you have the following packages installed:
