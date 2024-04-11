@@ -5,10 +5,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get -y install build-essential g++ libssl-dev cmake git
 
-RUN mkdir /aws-iot-device-client
-
-COPY aws-iot-device-client /aws-iot-device-client
-RUN cd aws-iot-device-client && \
+RUN git clone https://github.com/awslabs/aws-iot-device-client.git && \
+    cd aws-iot-device-client && \
+    git checkout v1.9.2 && \
     mkdir build && \
     cd build && \
     cmake ../ \
